@@ -1,0 +1,16 @@
+export const COLORS = Object.freeze({
+	white: '#FFFFFF',
+	black: '#000000',
+	blue: '#3C82F6',
+	secondaryBlue: '#5397F5',
+	lightBlue: '#EDF1F7',
+	grey: '#777777',
+	secondaryGrey: '#A9A9A9',
+	lightGrey: '#E3E3E3',
+	secondaryLightGrey: '#D0D0D0',
+	additionalLightGrey: '#F5F5F5',
+	red: '#FF0000',
+	lightRed: '#FF6E6E',
+	green: '#22BB00',
+	blur: 'rgba(0, 0, 0, 0.4)',
+});

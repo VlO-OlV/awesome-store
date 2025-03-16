@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  password   String
+  role       UserRole @default(USER)
+  isVerified Boolean  @default(false) @map("is_verified")
+  fullName   String   @map("full_name")
+  phone      String
+  address    String
+  tokens     Token[]
+  orders     Order[]
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum TokenType {
+  EMAIL
+  PASSWORD
+  REFRESH
+}
+
+model Token {
+  id        String    @id @default(uuid())
+  token     String
+  tokenType TokenType @map("token_type")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String    @map("user_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("tokens")
+}
+
+model Product {
+  id           String        @id @default(uuid())
+  name         String
+  category     String
+  price        Float         @default(0)
+  description  String
+  quantity     Int           @default(0)
+  orderDetails OrderDetail[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  @@map("products")
+}
+
+model Order {
+  id             String         @id @default(uuid())
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String         @map("user_id")
+  totalAmount    Float          @default(0) @map("total_amount")
+  paymentStatus  PaymentStatus  @default(PENDING) @map("payment_status")
+  deliveryStatus DeliveryStatus @default(PENDING) @map("delivery_status")
+  orderDetails   OrderDetail[]
+  payment        Payment?
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @default(now()) @updatedAt @map("updated_at")
+
+  @@map("orders")
+}
+
+model OrderDetail {
+  id            String  @id @default(uuid())
+  order         Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId       String  @map("order_id")
+  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId     String  @map("product_id")
+  quantity      Int     @default(1)
+  purchasePrice Float   @map("purchase_price")
+
+  @@map("order_details")
+}
+
+enum PaymentStatus {
+  COMPLETE
+  FAILED
+  PENDING
+}
+
+enum DeliveryStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId       String   @unique @map("order_id")
+  transactionId String   @unique @default(uuid()) @map("transaction_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("payments")
+}
